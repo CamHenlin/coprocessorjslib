@@ -64,8 +64,11 @@ Used at the end of your program once you no longer expect any serial communicati
 This is the maximum size that coprocessorjslib is set up to receive in a single function call. In your code, you should expect results to be up to this size and handle appropriately.
 
 ## example C code
-Also available in more runnable code at https://github.com/CamHenlin/retro68-coprocessorjs-test/. Example JS code is here: https://github.com/CamHenlin/retro68-coprocessorjs-test/tree/c7e7b4066fbf86a8f021b2be71c11c9ec64b1e87/JS and see above note on `sendProgramToCoprocessor` for packaging info. 
+Also available in more runnable code at https://github.com/CamHenlin/retro68-coprocessorjs-test/.
 
+Example JS code is here: https://github.com/CamHenlin/retro68-coprocessorjs-test/tree/c7e7b4066fbf86a8f021b2be71c11c9ec64b1e87/JS and see above note on `sendProgramToCoprocessor` for packaging info. 
+
+include `coprocessorjs.h` and `coprocessorjs.c` in your project to get started
 
 ```
 #include <Resources.h>
