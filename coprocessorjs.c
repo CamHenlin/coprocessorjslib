@@ -73,7 +73,7 @@ void setupPBControlForSerialPort(short serialPortShort) {
     CntrlParam cb;
     cb.ioCRefNum = serialPortShort; // TODO: this is always 0 - does it matter? should we hard code 0 here? research
     cb.csCode = 8; // TODO: need to look up and document what csCode = 8 means
-    cb.csParam[0] = stop10 | noParity | data8 | baud9600; // TODO: can we achieve higher than 9600 baud? - should be able to achieve at least 19.2k on a 68k machine
+    cb.csParam[0] = stop10 | noParity | data8 | baud19200; // TODO: can we achieve higher than 9600 baud? - should be able to achieve at least 19.2k on a 68k machine
     OSErr err = PBControl ((ParmBlkPtr) & cb, 0); // PBControl definition: http://mirror.informatimago.com/next/developer.apple.com/documentation/mac/Networking/Networking-296.html
 
     if (PRINT_ERRORS) {
@@ -88,6 +88,8 @@ void setupPBControlForSerialPort(short serialPortShort) {
         return;
     }
 }
+
+
 
 void setupSerialPort(const char *name) {
 #define MODEM_PORT_OUT   "\p.AOut"
@@ -157,17 +159,39 @@ void setupSerialPort(const char *name) {
     SerSetBuf(incomingSerialPortReference.ioRefNum, incomingSerialPortReference.ioBuffer, RECEIVE_WINDOW_SIZE);
 }
 
-void wait(double timeInSeconds) {
+void wait(float timeInSeconds) {
 
-    time_t start;
-    time_t end;
+    // from "Inside Macintosh: Macintosh Toolbox Essentials" pg 2-112 
+    // You can use the TickCount function to get the current number of ticks (a tick is
+    // approximately 1/60 of a second) since the system last started up.
+    // FUNCTION TickCount: LongInt;
 
-    time(&start);
+    // previous implementation, which might work on more modern platforms (which is why this is left as a comment), was:
+    // note that this appeared to sometimes be off by as much as 1s on a Macintosh classic (using other normal C time functions to measure...)
+    // time_t start;
+    // time_t end;
+
+    // time(&start);
+
+    // do {
+
+    //     time(&end);
+    // } while (difftime(end, start) <= timeInSeconds);
+
+    long start; 
+    long end;
+    long waitTicks = (long)timeInSeconds * 60;
+
+    start = TickCount();
 
     do {
 
-        time(&end);
-    } while (difftime(end, start) <= timeInSeconds);
+        end = TickCount();
+    } while (end - start <= waitTicks);
+
+    // char log[255];
+    // sprintf(log, "start time was %ld end time was %ld split was %ld and wait ticks were %ld, input was %f\n ", start, end, end - start, waitTicks, timeInSeconds);
+    // printf(log);
 }
 
 // void because this function re-assigns respo
@@ -206,7 +230,7 @@ void readSerialPort(char* output) {
 
             lastByteCount = (long int)byteCount;
 
-            wait(0.1); // give the buffer a moment to fill
+            wait(0.01); // give the buffer a moment to fill
 
             serGetBufStatus = SerGetBuf(incomingSerialPortReference.ioRefNum, &byteCount);
 
@@ -494,6 +518,7 @@ char* getReturnValueFromResponse(char *response, char *operation, char *output) 
     }
 }
 
+// TODO: this is a function we would want to expose in a library
 // TODO: these should all bubble up and return legible errors
 void sendProgramToCoprocessor(char* program, char *output) {
     
@@ -512,6 +537,7 @@ void sendProgramToCoprocessor(char* program, char *output) {
     return;
 }
 
+// TODO: this is a function we would want to expose in a library
 void callFunctionOnCoprocessor(char* functionName, char* parameters, char* output) {
     
     if (DEBUGGING) {
@@ -537,6 +563,7 @@ void callFunctionOnCoprocessor(char* functionName, char* parameters, char* outpu
     return;
 }
 
+// TODO: this is a function we would want to expose in a library
 void callEvalOnCoprocessor(char* toEval, char* output) {
     
     if (DEBUGGING) {
