@@ -11,7 +11,7 @@ coprocessorjslib is intended to be included in other C/C++ programs targeted at 
 
 Include `coprocessorjs.h` and `coprocessorjs.c` in your Retro68, MPW, THINK C, etc program.
 
-From there, there are 5 functions and 1 variable available to your C code:
+From there, there are 7 functions and 3 variables available to your C code:
 
 - setupCoprocessor
 - sendProgramToCoprocessor
