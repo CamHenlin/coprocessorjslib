@@ -22,6 +22,7 @@ From there, there are 5 functions and 1 variable available to your C code:
 - closeSerialPort
 - MAX_RECEIVE_SIZE
 - system7OrGreater
+- asyncCallActive
 
 #### setupCoprocessor
 `void setupCoprocessor(char *applicationId, const char *serialDeviceName)`
@@ -59,8 +60,7 @@ Used for asynchronously calling functions on the nodejs application that the Cla
 #### coprocessorEventLoopActions
 `void coprocessorEventLoopActions()`
 
-This function should be called in your event loop if your program intents to use `callVoidFunctionOnCoprocessorAsync`. If you do not do this, your serial port will not be able to drain repeated asynchronous function calls and will also may lose async function calls entirely if there is a synchronous function call happening when `callVoidFunctionOnCoprocessorAsync` is called.
-
+This function should be called in your event loop if your program intents to use `callVoidFunctionOnCoprocessorAsync`. If you do not do this, your serial port will not be able to drain repeated asynchronous function calls and will also may lose async function calls entirely if there is a synchronous function call happening when `callVoidFunctionOnCoprocessorAsync` is called. See https://github.com/CamHenlin/FocusedEdit/blob/d00bb6f9d6f9940263e3408d73c1a79c02515ec2/TESample.c#L389 for reference.
 
 #### callEvalOnCoprocessor
 `void callEvalOnCoprocessor(char* toEval, char* output)`
@@ -79,6 +79,16 @@ Used at the end of your program once you no longer expect any serial communicati
 `int MAX_RECEIVE_SIZE`
 
 This is the maximum size that coprocessorjslib is set up to receive in a single function call. In your code, you should expect results to be up to this size and handle appropriately.
+
+#### isSystem7OrGreater
+`Boolean isSystem7OrGreater`
+
+Check that is set during setupCoprocessor to tell us if we are running on System 7 or greater. This may be important to our program because it causes the serial port to behave differently.
+
+#### asyncCallActive
+`Boolean asyncCallActive`
+
+Boolean set when an async call is active via `callVoidFunctionOnCoprocessorAsync`. This is available so we can prevent ourselves from making a subsequent call (if desired) while we are still running a call.
 
 ## example C code
 Also available in more runnable code at https://github.com/CamHenlin/retro68-coprocessorjs-test/.
