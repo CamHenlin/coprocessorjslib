@@ -16,9 +16,12 @@ From there, there are 5 functions and 1 variable available to your C code:
 - setupCoprocessor
 - sendProgramToCoprocessor
 - callFunctionOnCoprocessor
+- callVoidFunctionOnCoprocessorAsync
 - callEvalOnCoprocessor
+- coprocessorEventLoopActions
 - closeSerialPort
 - MAX_RECEIVE_SIZE
+- system7OrGreater
 
 #### setupCoprocessor
 `void setupCoprocessor(char *applicationId, const char *serialDeviceName)`
@@ -43,7 +46,21 @@ Used for calling functions on the nodejs application that the Classic Macintosh 
 
 - *functionName*: unique string for your application, could be something like "my test application v0.01"
 - *parameters*: function parameters for your nodejs function, each parameter should be delimited by the string `&&&`. See here for format reference: https://github.com/CamHenlin/coprocessor.js/blob/0a8d3d16f093477068d6be23ab9adc36d845aacf/README.md#now-send-things-over-the-serial-port if you are curious about this
-- *output*: the return result of the function call from the remote device will be set here. 
+- *output*: the return result of the function call from the remote device will be set here.
+
+#### callVoidFunctionOnCoprocessorAsync
+`void callVoidFunctionOnCoprocessorAsync(char* functionName, char* parameters)`
+
+Used for asynchronously calling functions on the nodejs application that the Classic Macintosh application sent to the host. `callVoidFunctionOnCoprocessorAsync` will never return results to the program. Instead, results should be retrieved with a later `callFunctionOnCoprocessor` call. This can be called any time after `sendProgramToCoprocessor` and can be called repeatedly. This function is the main purpose behind coprocessorjslib. Requires that you insert a call to `coprocessorEventLoopActions` in your event loop to ensure that stacked `callVoidFunctionOnCoprocessorAsync` are drained.
+
+- *functionName*: unique string for your application, could be something like "my test application v0.01"
+- *parameters*: function parameters for your nodejs function, each parameter should be delimited by the string `&&&`. See here for format reference: https://github.com/CamHenlin/coprocessor.js/blob/0a8d3d16f093477068d6be23ab9adc36d845aacf/README.md#now-send-things-over-the-serial-port if you are curious about this
+
+#### coprocessorEventLoopActions
+`void coprocessorEventLoopActions()`
+
+This function should be called in your event loop if your program intents to use `callVoidFunctionOnCoprocessorAsync`. If you do not do this, your serial port will not be able to drain repeated asynchronous function calls and will also may lose async function calls entirely if there is a synchronous function call happening when `callVoidFunctionOnCoprocessorAsync` is called.
+
 
 #### callEvalOnCoprocessor
 `void callEvalOnCoprocessor(char* toEval, char* output)`
@@ -112,3 +129,7 @@ This is still in somewhat early stages but is enough to start building other app
 
 ## Questions? Comments? Using the library?
 Open an issue, open a PR, shoot me a message - I'd love to hear about what you're building with coprocessorjs.
+
+## Programs that use Coprocessor
+- https://github.com/CamHenlin/FocusedEdit
+- https://github.com/CamHenlin/MessagesForMacintosh 
